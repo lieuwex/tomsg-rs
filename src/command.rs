@@ -46,7 +46,7 @@ impl<'a> Command<'a> {
                 format!("history_before {} {} {}", word!(room), count, message_id)
             }
             Command::Ping => String::from("ping"),
-            Command::IsOnline(user) => format!("is_oline {}", word!(user)),
+            Command::IsOnline(user) => format!("is_online {}", word!(user)),
             Command::UserActive(active) => format!("user_active {}", active),
 
             Command::FirebaseToken(_) => todo!(),
