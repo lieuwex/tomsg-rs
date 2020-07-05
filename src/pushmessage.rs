@@ -2,10 +2,10 @@ use crate::types::message::Message;
 
 #[derive(Debug)]
 pub enum PushMessage {
-    Online(i64, String), // i64, word
+    Online(i64, String),    // i64, word
     Message(Message),
-    Invite(String),       // word
-    Join(String, String), // word, word
+    Invite(String, String), // word, word
+    Join(String, String),   // word, word
 }
 
 impl PushMessage {
@@ -31,7 +31,7 @@ impl PushMessage {
                     message,
                 })
             }
-            "invite" => PushMessage::Invite(words[2].to_owned()),
+            "invite" => PushMessage::Invite(words[2].to_owned(), words[3].to_owned()),
             "join" => PushMessage::Join(words[2].to_owned(), words[3].to_owned()),
 
             // we can ignore this
