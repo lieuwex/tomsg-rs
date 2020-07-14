@@ -1,8 +1,8 @@
-use crate::types::message::Message;
+use crate::message::Message;
 
 #[derive(Debug)]
 pub enum PushMessage {
-    Online(i64, String),    // i64, word
+    Online(i64, String), // i64, word
     Message(Message),
     Invite(String, String), // word, word
     Join(String, String),   // word, word

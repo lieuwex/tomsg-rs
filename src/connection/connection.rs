@@ -10,72 +10,77 @@ use async_std::task;
 
 use super::r#type::Type;
 use crate::command::Command;
+use crate::message::Message;
 use crate::pushmessage::*;
-use crate::types::message::Message;
-use crate::types::reply::*;
+use crate::reply::*;
 
 use futures::channel::mpsc;
 use futures::channel::oneshot;
 use futures_util::sink::SinkExt;
 
 struct ConnectionInternal {
-    tagCounter: usize,
-    replyMap: HashMap<String, oneshot::Sender<Reply>>,
-    awaitingHistory: Option<(i64, Vec<Message>)>,
-    pushChannel: mpsc::Sender<PushMessage>,
+    tag_counter: usize,
+    reply_map: HashMap<String, oneshot::Sender<Reply>>,
+    awaiting_history: Option<(i64, Vec<Message>)>,
+    push_channel: mpsc::Sender<PushMessage>,
 }
 
 impl ConnectionInternal {
-    async fn handleMessage(&mut self, message: String) {
+    async fn handle_message(&mut self, message: String) {
         if message.splitn(2, ' ').next() == Some("_push") {
-            self.handlePush(message).await;
+            self.handle_push(message).await;
         } else {
-            self.handleReply(message).await;
+            self.handle_reply(message).await;
         }
     }
 
-    async fn handlePush(&mut self, message: String) {
+    async fn handle_push(&mut self, message: String) {
         let push = match PushMessage::parse(&message) {
             Some(p) => p,
-            None => return,
+            None => return, // we can ignore this push
         };
-        self.pushChannel.send(push).await;
+        self.push_channel.send(push).await.unwrap();
     }
 
-    async fn handleReply(&mut self, message: String) {
-        let reply = Reply::parse(&message);
+    async fn handle_reply(&mut self, message: String) {
+        let reply = parse(&message);
 
-        match reply.command {
-            ReplyCommand::historyInternal(count) => {
-                self.awaitingHistory = Some((count, Vec::with_capacity(count as usize)));
+        match reply.1 {
+            InternalReplyCommand::HistoryInit(count) => {
+                self.awaiting_history = Some((count, Vec::with_capacity(count as usize)));
             }
-            ReplyCommand::historyMessageInternal(index, message) => {
-                match &self.awaitingHistory {
+            InternalReplyCommand::HistoryMessage(index, message) => {
+                match &self.awaiting_history {
                     None => panic!("not waiting"),
                     Some((count, items)) => {
                         let mut items = items.clone(); // REVIEW
                         items.push(message);
                         if index == *count - 1 {
                             // done
-                            self.awaitingHistory = None;
+                            self.awaiting_history = None;
 
-                            if let Some(sender) = self.replyMap.remove(&reply.tag) {
+                            if let Some(sender) = self.reply_map.remove(&reply.0) {
                                 sender
                                     .send(Reply {
-                                        tag: reply.tag,
+                                        tag: reply.0,
                                         command: ReplyCommand::History(items),
                                     })
                                     .unwrap();
                             }
                         } else {
-                            self.awaitingHistory = Some((*count, items));
+                            self.awaiting_history = Some((*count, items));
                         }
                     }
                 }
             }
-            _ => {
-                if let Some(sender) = self.replyMap.remove(&reply.tag) {
-                    sender.send(reply).unwrap();
+            InternalReplyCommand::Normal(n) => {
+                if let Some(sender) = self.reply_map.remove(&reply.0) {
+                    sender
+                        .send(Reply {
+                            tag: reply.0,
+                            command: n,
+                        })
+                        .unwrap();
                 }
             }
         }
@@ -83,28 +88,26 @@ impl ConnectionInternal {
 }
 
 pub struct Connection {
-    typ: Type,
     stream: TcpStream,
     internal: Arc<Mutex<ConnectionInternal>>,
 }
 
 impl Connection {
     pub async fn connect(
-        typ: Type,
+        _typ: Type,
         address: SocketAddr,
     ) -> async_std::io::Result<(Self, mpsc::Receiver<PushMessage>)> {
         let stream = TcpStream::connect(address).await?;
-        let (pushSend, pushReceive) = mpsc::channel(20);
+        let (push_send, push_receive) = mpsc::channel(20);
 
         let internal = Arc::new(Mutex::new(ConnectionInternal {
-            tagCounter: 0,
-            replyMap: HashMap::new(),
-            awaitingHistory: None,
-            pushChannel: pushSend,
+            tag_counter: 0,
+            reply_map: HashMap::new(),
+            awaiting_history: None,
+            push_channel: push_send,
         }));
 
         let mut conn = Self {
-            typ: typ,
             stream: stream.clone(),
 
             internal: internal.clone(),
@@ -117,16 +120,16 @@ impl Connection {
                 let mut line = String::new();
                 reader.read_line(&mut line).await.unwrap();
                 line.pop();
-                internal.lock().await.handleMessage(line).await;
+                internal.lock().await.handle_message(line).await;
             }
         });
 
-        conn.sendMessage(Command::Version("1")).await?;
+        conn.send_message(Command::Version("1")).await?;
 
-        Ok((conn, pushReceive))
+        Ok((conn, push_receive))
     }
 
-    async fn sendMessageWithTag(
+    async fn send_message_with_tag(
         &mut self,
         tag: String,
         command: Command<'_>,
@@ -134,31 +137,34 @@ impl Connection {
         let receiver = {
             let mut internal = self.internal.lock().await;
 
-            if internal.replyMap.contains_key(&tag) {
+            if internal.reply_map.contains_key(&tag) {
                 panic!("key already exists");
             }
 
             let (sender, receiver) = oneshot::channel();
-            internal.replyMap.insert(tag.clone(), sender);
+            internal.reply_map.insert(tag.clone(), sender);
             receiver
         };
 
+        println!("sending {} {}", tag, command.to_str());
         self.stream
             .write(format!("{} {}\n", tag, command.to_str()).as_bytes())
             .await?;
 
-        Ok(receiver.await.unwrap())
+        let value = receiver.await.unwrap();
+        println!("{:?}", value);
+        Ok(value)
     }
 
-    pub async fn sendMessage(&mut self, command: Command<'_>) -> async_std::io::Result<Reply> {
+    pub async fn send_message(&mut self, command: Command<'_>) -> async_std::io::Result<Reply> {
         let tag = {
             let mut internal = self.internal.lock().await;
 
-            let tag = internal.tagCounter;
-            internal.tagCounter += 1;
+            let tag = internal.tag_counter;
+            internal.tag_counter += 1;
             tag
         };
 
-        self.sendMessageWithTag(tag.to_string(), command).await
+        self.send_message_with_tag(tag.to_string(), command).await
     }
 }

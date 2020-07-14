@@ -1,7 +1,8 @@
 pub mod command;
 pub mod connection;
+pub mod message;
 pub mod pushmessage;
-pub mod types;
+pub mod reply;
 
 #[cfg(test)]
 mod tests {
