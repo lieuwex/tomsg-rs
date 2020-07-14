@@ -118,9 +118,23 @@ impl Connection {
 
             loop {
                 let mut line = String::new();
-                reader.read_line(&mut line).await.unwrap();
-                line.pop();
-                internal.lock().await.handle_message(line).await;
+                let res = reader.read_line(&mut line).await;
+
+                let mut internal = internal.lock().await;
+                match res {
+                    Err(_) => {
+                        // REVIEW: do some error reporting...
+                        internal.push_channel.close_channel();
+                    }
+                    Ok(0) => {
+                        // EOF
+                        internal.push_channel.close_channel();
+                    }
+                    Ok(_) => {
+                        line.pop();
+                        internal.handle_message(line).await;
+                    }
+                }
             }
         });
 
