@@ -20,19 +20,17 @@ mod tests {
     #[test]
     fn it_works() {
         task::block_on(async {
-            println!("a");
-            let (mut conn, mut pushChannel) = Connection::connect(
+            let (mut conn, mut push_channel) = Connection::connect(
                 Type::Plain,
                 SocketAddrV4::new(Ipv4Addr::new(127, 0, 0, 1), 29536).into(),
             )
             .await
             .unwrap();
-            println!("b");
 
             let t = task::spawn(async move {
                 loop {
-                    let pushMessage = pushChannel.next().await;
-                    println!("{:?}", pushMessage);
+                    let push_message = push_channel.next().await;
+                    println!("{:?}", push_message);
                 }
             });
 

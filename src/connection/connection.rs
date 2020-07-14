@@ -35,7 +35,6 @@ impl ConnectionInternal {
     }
 
     async fn handlePush(&mut self, message: String) {
-        println!("handlePush: {}", message);
         let push = match PushMessage::parse(&message) {
             Some(p) => p,
             None => return,
@@ -44,9 +43,7 @@ impl ConnectionInternal {
     }
 
     async fn handleReply(&mut self, message: String) {
-        println!("handleReply: {}", message);
         let reply = Reply::parse(&message);
-        println!("we got a reply: {:?}", reply);
 
         match reply.command {
             ReplyCommand::historyInternal(count) => {
@@ -78,7 +75,6 @@ impl ConnectionInternal {
             }
             _ => {
                 if let Some(sender) = self.replyMap.remove(&reply.tag) {
-                    println!("found sender for reply {}", reply.tag);
                     sender.send(reply).unwrap();
                 }
             }
@@ -121,14 +117,11 @@ impl Connection {
                 let mut line = String::new();
                 reader.read_line(&mut line).await.unwrap();
                 line.pop();
-                eprintln!("got: {}", line);
                 internal.lock().await.handleMessage(line).await;
             }
         });
 
-        println!("1");
-        let p = conn.sendMessage(Command::Version("1")).await;
-        println!("2");
+        conn.sendMessage(Command::Version("1")).await?;
 
         Ok((conn, pushReceive))
     }
@@ -168,13 +161,3 @@ impl Connection {
         self.sendMessageWithTag(tag.to_string(), command).await
     }
 }
-
-//Voorbeeld :
-//
-//
-// let res = conn.sendMessageWithTag("1", Command::Version("5")).await;
-//   // merk op dat uit ^ volgt dat sendMessageWithTag een future returnt
-//
-// res.id // dit zou dan "1" zijn
-// res.args // dit zou dan de args zijn ofzo, moet even je protocol lezen
-// res.typ // dit zou dan reply type zijn ofzo
