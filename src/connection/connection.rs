@@ -143,8 +143,9 @@ impl Connection {
             receiver
         };
 
-        write!(self.stream, "{} {}\n", tag, command.to_str()).await?;
-        eprintln!("written: {} {}", tag, command.to_str());
+        self.stream
+            .write(format!("{} {}\n", tag, command.to_str()).as_bytes())
+            .await?;
 
         Ok(receiver.await.unwrap())
     }
