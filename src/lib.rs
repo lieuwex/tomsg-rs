@@ -1,11 +1,7 @@
-mod command;
-mod connection;
-mod pushmessage;
-mod types;
-
-pub fn test() {
-    println!("test");
-}
+pub mod command;
+pub mod connection;
+pub mod pushmessage;
+pub mod types;
 
 #[cfg(test)]
 mod tests {
