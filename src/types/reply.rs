@@ -39,7 +39,7 @@ impl Reply {
             "error" => make(ReplyCommand::Error(words[2..].join(" "))),
             "name" => make(ReplyCommand::Name(words[2].to_string())),
             "list" => make(ReplyCommand::List(
-                words[2..].iter().map(|w| w.to_string()).collect(),
+                words[3..].iter().map(|w| w.to_string()).collect(),
             )),
             "pong" => make(ReplyCommand::Pong),
 
