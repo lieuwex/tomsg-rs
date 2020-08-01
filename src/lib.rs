@@ -4,10 +4,12 @@ pub mod message;
 pub mod pushmessage;
 pub mod reply;
 
+mod util;
+
 #[cfg(test)]
 mod tests {
-    use async_std::net::*;
-    use async_std::task;
+    use tokio::net::*;
+    use tokio::task;
 
     use super::command::Command;
     use super::connection::*;

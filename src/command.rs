@@ -1,23 +1,24 @@
-pub enum Command<'a> {
-    Version(&'a str),                 // string
-    Register(&'a str, &'a str),       // word, string
-    Login(&'a str, &'a str),          // word, string
-    Logout,                           //
-    Listrooms,                        //
-    ListMembers(&'a str),             // word
-    CreateRoom,                       //
-    Invite(&'a str, &'a str),         // word, word
-    Send(&'a str, &'a str),           // word, string
-    History(&'a str, i64),            // word, i64
-    HistoryBefore(&'a str, i64, i64), // word, i64, i64
-    Ping,                             //
-    IsOnline(&'a str),                // word
-    FirebaseToken(&'a str),           // word
-    DeleteFirebaseToken(&'a str),     // word
-    UserActive(i64),                  // i64
+pub enum Command {
+    Version(String),                   // string
+    Register(String, String),          // word, string
+    Login(String, String),             // word, string
+    Logout,                            //
+    Listrooms,                         //
+    ListMembers(String),               // word
+    CreateRoom,                        //
+    Invite(String, String),            // word, word
+    Send(String, Option<i64>, String), // word, i64, string
+    History(String, i64),              // word, i64
+    HistoryBefore(String, i64, i64),   // word, i64, i64
+    GetMessage(i64),                   // i64
+    Ping,                              //
+    IsOnline(String),                  // word
+    FirebaseToken(String),             // word
+    DeleteFirebaseToken(String),       // word
+    UserActive(i64),                   // i64
 }
 
-impl<'a> Command<'a> {
+impl Command {
     pub fn to_str(&self) -> String {
         macro_rules! word {
             ($e:expr) => {
@@ -40,11 +41,15 @@ impl<'a> Command<'a> {
             Command::ListMembers(room) => format!("list_members {}", word!(room)),
             Command::CreateRoom => String::from("create_room"),
             Command::Invite(room, user) => format!("invite {} {}", word!(room), word!(user)),
-            Command::Send(room, message) => format!("send {} {}", word!(room), message),
+            Command::Send(room, reply_id, message) => {
+                let reply_id = reply_id.unwrap_or(-1);
+                format!("send {} {} {}", word!(room), reply_id, message)
+            }
             Command::History(room, count) => format!("history {} {}", word!(room), count),
             Command::HistoryBefore(room, count, message_id) => {
                 format!("history_before {} {} {}", word!(room), count, message_id)
             }
+            Command::GetMessage(message_id) => format!("get_message {}", message_id),
             Command::Ping => String::from("ping"),
             Command::IsOnline(user) => format!("is_online {}", word!(user)),
             Command::UserActive(active) => format!("user_active {}", active),

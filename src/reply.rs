@@ -1,4 +1,5 @@
 use super::message::Message;
+use super::util::parsei64;
 
 pub enum InternalReplyCommand {
     Normal(ReplyCommand),
@@ -15,6 +16,7 @@ pub enum ReplyCommand {
     List(Vec<String>),     // words
     Pong,                  //
     History(Vec<Message>), //
+    Message(Message),      //
 }
 
 #[derive(Debug)]
@@ -33,8 +35,6 @@ pub fn parse(s: &str) -> (String, InternalReplyCommand) {
         make(InternalReplyCommand::Normal(command))
     };
 
-    let parsei64 = |item: &str| -> i64 { item.parse::<i64>().unwrap() };
-
     match words[1] {
         "ok" => make_normal(ReplyCommand::Ok),
         "number" => make_normal(ReplyCommand::Number(parsei64(words[2]))),
@@ -44,27 +44,17 @@ pub fn parse(s: &str) -> (String, InternalReplyCommand) {
             words[3..].iter().map(|w| w.to_string()).collect(),
         )),
         "pong" => make_normal(ReplyCommand::Pong),
+        "message" => {
+            let message = Message::try_parse(&words[2..]).unwrap();
+            make_normal(ReplyCommand::Message(message))
+        }
 
         // still needs to be handled
         "history" => make(InternalReplyCommand::HistoryInit(parsei64(words[2]))),
         "history_message" => {
             let index = parsei64(words[2]);
-            let roomname = words[3].to_string();
-            let username = words[4].to_string();
-            let timestamp = parsei64(words[5]);
-            let id = parsei64(words[6]);
-            let message = words[7..].join(" ");
-
-            make(InternalReplyCommand::HistoryMessage(
-                index,
-                Message {
-                    id,
-                    roomname,
-                    username,
-                    timestamp,
-                    message,
-                },
-            ))
+            let message = Message::try_parse(&words[3..]).unwrap();
+            make(InternalReplyCommand::HistoryMessage(index, message))
         }
 
         w => panic!(format!("unexpected response type: '{}'", w)),
