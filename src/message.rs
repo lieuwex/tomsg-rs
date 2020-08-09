@@ -2,7 +2,6 @@ use std::convert::TryFrom;
 use std::time;
 
 use super::id::Id;
-use super::util::{expect_word, parsei64};
 use super::word::Word;
 
 #[derive(Debug, Clone)]
@@ -17,17 +16,36 @@ pub struct Message {
 
 impl Message {
     pub(super) fn try_parse(words: &[&str]) -> Result<Self, &'static str> {
-        // TODO: better error handling
+        macro_rules! parse_i64 {
+            ($val:expr, $field:expr) => {
+                match $val.parse::<i64>() {
+                    Err(_) => {
+                        return Err(concat!("got invalid invalid value for message ", $field))
+                    }
+                    Ok(i) => i,
+                }
+            };
+        }
+        macro_rules! parse_id {
+            ($val:expr, $field:expr) => {
+                match Id::try_from($val) {
+                    Err(_) => {
+                        return Err(concat!("got invalid invalid value for message ", $field))
+                    }
+                    Ok(i) => i,
+                }
+            };
+        }
 
-        let id = Id::try_from(parsei64(words[3])).unwrap();
-        let reply_on = match parsei64(words[4]) {
+        let id = parse_id!(parse_i64!(words[3], "id"), "id");
+        let reply_on = match parse_i64!(words[4], "reply_on") {
             -1 => None,
-            id => Some(Id::try_from(id).unwrap()),
+            id => Some(parse_id!(id, "reply_on")),
         };
-        let roomname = expect_word(words[0]);
-        let username = expect_word(words[1]);
+        let roomname = Word::try_from(words[0].to_string())?;
+        let username = Word::try_from(words[1].to_string())?;
 
-        let timestamp = parsei64(words[2]) as u64;
+        let timestamp = parse_i64!(words[2], "timestamp") as u64;
         let timestamp = time::UNIX_EPOCH + time::Duration::from_micros(timestamp);
 
         let message = words[5..].join(" ");
