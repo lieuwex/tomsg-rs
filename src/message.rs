@@ -1,8 +1,9 @@
 use std::convert::TryFrom;
 use std::time;
 
-use super::id::Id;
-use super::word::Word;
+use crate::id::Id;
+use crate::line::Line;
+use crate::word::Word;
 
 #[derive(Debug, Clone)]
 pub struct Message {
@@ -11,7 +12,7 @@ pub struct Message {
     pub roomname: Word,
     pub username: Word,
     pub timestamp: time::SystemTime,
-    pub message: String,
+    pub message: Line,
 }
 
 impl Message {
@@ -49,6 +50,7 @@ impl Message {
         let timestamp = time::UNIX_EPOCH + time::Duration::from_micros(timestamp);
 
         let message = words[5..].join(" ");
+        let message = Line::try_from(message)?;
 
         Ok(Self {
             id,

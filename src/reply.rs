@@ -1,5 +1,6 @@
 use std::convert::TryFrom;
 
+use super::line::Line;
 use super::message::Message;
 use super::word::Word;
 use crate::util::{expect_word, parsei64};
@@ -14,7 +15,7 @@ pub(super) enum InternalReplyCommand {
 pub enum ReplyCommand {
     Ok,                    //
     Number(i64),           // i64
-    Error(String),         // string
+    Error(Line),           // string
     Name(Word),            // word
     List(Vec<Word>),       // words
     Pong,                  //
@@ -40,10 +41,12 @@ pub(super) fn parse(s: &str) -> (Word, InternalReplyCommand) {
         make(InternalReplyCommand::Normal(command))
     };
 
+    let expect_line = |s: String| Line::try_from(s).unwrap();
+
     match words[1] {
         "ok" => make_normal(ReplyCommand::Ok),
         "number" => make_normal(ReplyCommand::Number(parsei64(words[2]))),
-        "error" => make_normal(ReplyCommand::Error(words[2..].join(" "))),
+        "error" => make_normal(ReplyCommand::Error(expect_line(words[2..].join(" ")))),
         "name" => make_normal(ReplyCommand::Name(expect_word(words[2]))),
         "list" => make_normal(ReplyCommand::List(
             words[3..].iter().map(expect_word).collect(),

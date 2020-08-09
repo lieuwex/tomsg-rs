@@ -169,7 +169,7 @@ impl Connection {
             }
         });
 
-        conn.send_message(Command::Version("2".to_string()))
+        conn.send_message(Command::Version(Word::try_from("2".to_string()).unwrap()))
             .await?
             .map_err(|e| {
                 let (kind, e) = match e {

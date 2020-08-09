@@ -1,24 +1,25 @@
 use crate::id::Id;
+use crate::line::Line;
 use crate::word::Word;
 
 pub enum Command {
-    Version(String),                // string
-    Register(Word, String),         // word, string
-    Login(Word, String),            // word, string
-    Logout,                         //
-    Listrooms,                      //
-    ListMembers(Word),              // word
-    CreateRoom,                     //
-    Invite(Word, Word),             // word, word
-    Send(Word, Option<Id>, String), // word, i64, string
-    History(Word, i64),             // word, i64
-    HistoryBefore(Word, i64, Id),   // word, i64, i64
-    GetMessage(i64),                // i64
-    Ping,                           //
-    IsOnline(Word),                 // word
-    FirebaseToken(Word),            // word
-    DeleteFirebaseToken(Word),      // word
-    UserActive(i64),                // i64
+    Version(Word),                // word
+    Register(Word, Line),         // word, string
+    Login(Word, Line),            // word, string
+    Logout,                       //
+    Listrooms,                    //
+    ListMembers(Word),            // word
+    CreateRoom,                   //
+    Invite(Word, Word),           // word, word
+    Send(Word, Option<Id>, Line), // word, i64, string
+    History(Word, i64),           // word, i64
+    HistoryBefore(Word, i64, Id), // word, i64, i64
+    GetMessage(i64),              // i64
+    Ping,                         //
+    IsOnline(Word),               // word
+    FirebaseToken(Word),          // word
+    DeleteFirebaseToken(Word),    // word
+    UserActive(i64),              // i64
 }
 
 impl Command {
