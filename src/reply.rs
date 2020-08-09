@@ -1,7 +1,10 @@
-use super::message::Message;
-use super::util::parsei64;
+use std::convert::TryFrom;
 
-pub enum InternalReplyCommand {
+use super::message::Message;
+use super::word::Word;
+use crate::util::{expect_word, parsei64};
+
+pub(super) enum InternalReplyCommand {
     Normal(ReplyCommand),
     HistoryInit(i64),
     HistoryMessage(i64, Message), // index, message
@@ -12,8 +15,8 @@ pub enum ReplyCommand {
     Ok,                    //
     Number(i64),           // i64
     Error(String),         // string
-    Name(String),          // word
-    List(Vec<String>),     // words
+    Name(Word),            // word
+    List(Vec<Word>),       // words
     Pong,                  //
     History(Vec<Message>), //
     Message(Message),      //
@@ -21,17 +24,19 @@ pub enum ReplyCommand {
 
 #[derive(Debug)]
 pub struct Reply {
-    pub tag: String,
+    pub tag: Word,
     pub command: ReplyCommand,
 }
 
-pub fn parse(s: &str) -> (String, InternalReplyCommand) {
+pub(super) fn parse(s: &str) -> (Word, InternalReplyCommand) {
+    println!("the raw string we got was: '{}'", s);
     let words: Vec<_> = s.split(' ').collect();
 
-    let make = |command: InternalReplyCommand| -> (String, InternalReplyCommand) {
-        (words[0].to_string(), command)
+    let make = |command: InternalReplyCommand| -> (Word, InternalReplyCommand) {
+        let tag = Word::try_from(words[0].to_string()).unwrap();
+        (tag, command)
     };
-    let make_normal = |command: ReplyCommand| -> (String, InternalReplyCommand) {
+    let make_normal = |command: ReplyCommand| -> (Word, InternalReplyCommand) {
         make(InternalReplyCommand::Normal(command))
     };
 
@@ -39,9 +44,9 @@ pub fn parse(s: &str) -> (String, InternalReplyCommand) {
         "ok" => make_normal(ReplyCommand::Ok),
         "number" => make_normal(ReplyCommand::Number(parsei64(words[2]))),
         "error" => make_normal(ReplyCommand::Error(words[2..].join(" "))),
-        "name" => make_normal(ReplyCommand::Name(words[2].to_string())),
+        "name" => make_normal(ReplyCommand::Name(expect_word(words[2]))),
         "list" => make_normal(ReplyCommand::List(
-            words[3..].iter().map(|w| w.to_string()).collect(),
+            words[3..].iter().map(expect_word).collect(),
         )),
         "pong" => make_normal(ReplyCommand::Pong),
         "message" => {

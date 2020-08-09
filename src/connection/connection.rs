@@ -1,4 +1,5 @@
 use std::collections::HashMap;
+use std::convert::TryFrom;
 use std::io;
 use std::net::SocketAddr;
 use std::sync::Arc;
@@ -16,6 +17,7 @@ use crate::command::Command;
 use crate::message::Message;
 use crate::pushmessage::*;
 use crate::reply::*;
+use crate::word::Word;
 
 use futures::channel::mpsc;
 use futures::channel::oneshot;
@@ -23,7 +25,7 @@ use futures_util::sink::SinkExt;
 
 struct ConnectionInternal {
     tag_counter: usize,
-    reply_map: HashMap<String, oneshot::Sender<Result<Reply, CloseReason>>>,
+    reply_map: HashMap<Word, oneshot::Sender<Result<Reply, CloseReason>>>,
     awaiting_history: Option<(i64, Vec<Message>)>,
     push_channel: mpsc::Sender<PushMessage>,
     close_reason: Option<CloseReason>,
@@ -182,7 +184,7 @@ impl Connection {
 
     async fn send_message_with_tag(
         &mut self,
-        tag: String,
+        tag: Word,
         command: Command,
     ) -> std::io::Result<Result<Reply, CloseReason>> {
         let receiver = {
@@ -218,7 +220,8 @@ impl Connection {
             tag
         };
 
-        self.send_message_with_tag(tag.to_string(), command).await
+        self.send_message_with_tag(Word::try_from(tag.to_string()).unwrap(), command)
+            .await
     }
 
     pub async fn close_reason(&self) -> Option<CloseReason> {

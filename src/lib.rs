@@ -1,8 +1,10 @@
 pub mod command;
 pub mod connection;
+pub mod id;
 pub mod message;
 pub mod pushmessage;
 pub mod reply;
+pub mod word;
 
 mod util;
 

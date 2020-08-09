@@ -1,6 +1,6 @@
-pub mod closereason;
-pub mod connection;
-pub mod r#type;
+mod closereason;
+mod connection;
+mod r#type;
 
 pub use self::closereason::*;
 pub use self::connection::*;
