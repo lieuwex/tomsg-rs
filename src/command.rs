@@ -23,7 +23,7 @@ pub enum Command {
 }
 
 impl Command {
-    pub fn to_str(&self) -> String {
+    pub fn to_string(&self) -> String {
         match self {
             Command::Version(v) => format!("version {}", v),
             Command::Register(username, password) => format!("register {} {}", username, password),

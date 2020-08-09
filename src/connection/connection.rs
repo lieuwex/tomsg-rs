@@ -200,7 +200,7 @@ impl Connection {
         };
 
         self.stream
-            .write(format!("{} {}\n", tag, command.to_str()).as_bytes())
+            .write(format!("{} {}\n", tag, command.to_string()).as_bytes())
             .await?;
         self.stream.flush().await?;
 
