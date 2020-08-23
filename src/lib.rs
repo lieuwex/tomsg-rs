@@ -7,6 +7,7 @@ pub mod pushmessage;
 pub mod reply;
 pub mod word;
 
+mod debug;
 mod util;
 
 pub use connection::Connection;
