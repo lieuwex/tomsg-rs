@@ -1,9 +1,10 @@
 use std::convert::TryFrom;
 
-use super::line::Line;
-use super::message::Message;
-use super::word::Word;
+use crate::debug;
+use crate::line::Line;
+use crate::message::Message;
 use crate::util::{expect_word, parsei64};
+use crate::word::Word;
 
 pub(super) enum InternalReplyCommand {
     Normal(ReplyCommand),
