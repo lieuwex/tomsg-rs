@@ -42,7 +42,7 @@ pub struct Reply {
 }
 
 pub(super) fn parse(s: &str) -> (Word, InternalReplyCommand) {
-    println!("the raw string we got was: '{}'", s);
+    debug!("the raw string we got was: '{}'", s);
     let words: Vec<_> = s.split(' ').collect();
 
     let make = |command: InternalReplyCommand| -> (Word, InternalReplyCommand) {

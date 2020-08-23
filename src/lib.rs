@@ -1,3 +1,5 @@
+#[macro_use] mod debug;
+
 pub mod command;
 pub mod connection;
 pub mod id;

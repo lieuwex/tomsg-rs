@@ -209,14 +209,14 @@ impl Connection {
         };
 
         let command = command.to_string();
-        println!("sending {} {}", tag, command);
+        debug!("sending {} {}", tag, command);
         self.stream
             .write(format!("{} {}\n", tag, command).as_bytes())
             .await?;
         self.stream.flush().await?;
 
         let value = receiver.await.unwrap();
-        println!("{:?}", value);
+        debug!("{:?}", value);
         Ok(value)
     }
 
