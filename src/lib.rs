@@ -9,6 +9,9 @@ pub mod word;
 
 mod util;
 
+pub use connection::Connection;
+
+/*
 #[cfg(test)]
 mod tests {
     use tokio::net::*;
@@ -53,3 +56,4 @@ mod tests {
         })
     }
 }
+*/

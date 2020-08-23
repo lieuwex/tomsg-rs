@@ -2,6 +2,7 @@ use crate::id::Id;
 use crate::line::Line;
 use crate::word::Word;
 
+/// A command that is sendable to a tomsg server, with related information.
 pub enum Command {
     Version(Word),                // word
     Register(Word, Line),         // word, string
@@ -23,7 +24,7 @@ pub enum Command {
 }
 
 impl Command {
-    pub fn to_string(&self) -> String {
+    pub(super) fn to_string(&self) -> String {
         match self {
             Command::Version(v) => format!("version {}", v),
             Command::Register(username, password) => format!("register {} {}", username, password),

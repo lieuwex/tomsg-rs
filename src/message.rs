@@ -5,13 +5,20 @@ use crate::id::Id;
 use crate::line::Line;
 use crate::word::Word;
 
+/// A tomsg message message in a room.
 #[derive(Debug, Clone)]
 pub struct Message {
+    /// The ID of the message.
     pub id: Id,
+    /// The ID of the message this message replies on, if any.
     pub reply_on: Option<Id>,
+    /// The name of the tomsg room this message is sent in.
     pub roomname: Word,
+    /// The username of the author of this message.
     pub username: Word,
+    /// The time this message was sent.
     pub timestamp: time::SystemTime,
+    /// The contents of this message.
     pub message: Line,
 }
 

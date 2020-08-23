@@ -11,21 +11,33 @@ pub(super) enum InternalReplyCommand {
     HistoryMessage(i64, Message), // index, message
 }
 
-#[derive(Debug)]
+/// A reply type and related information.
+#[derive(Debug, Clone)]
 pub enum ReplyCommand {
-    Ok,                    //
-    Number(i64),           // i64
-    Error(Line),           // string
-    Name(Word),            // word
-    List(Vec<Word>),       // words
-    Pong,                  //
-    History(Vec<Message>), //
-    Message(Message),      //
+    /// Represents a succesful processing of a sent `Command`.
+    Ok,
+    /// A numeric value returned to a sent `Command`.
+    Number(i64),
+    /// An error value returned to a sent `Command`.
+    Error(Line),
+    /// A name value returned to a sent `Command`.
+    Name(Word),
+    /// A list of name values returned to a sent `Command`.
+    List(Vec<Word>),
+    /// Response to a sent 'Command::Ping`.
+    Pong,
+    /// Resonse of a list of historical `Message` instances.
+    History(Vec<Message>),
+    /// A single `Message` instance.
+    Message(Message),
 }
 
-#[derive(Debug)]
+/// A reply sent by the server on a `Command`.
+#[derive(Debug, Clone)]
 pub struct Reply {
+    /// The tag of the `Message` this `Reply` is related to.
     pub tag: Word,
+    /// The command (with information) of this `Reply`.
     pub command: ReplyCommand,
 }
 

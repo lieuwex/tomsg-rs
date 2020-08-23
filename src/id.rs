@@ -1,10 +1,23 @@
 use std::convert::TryFrom;
 use std::fmt;
 
+/// An `Id` is a non-negative 64-bit integer.
+/// You can obtain an `Id` by calling `try_from` with a `i64` argument:
+/// ```
+/// use tomsg_rs::id::Id;
+/// use std::convert::TryFrom;
+///
+/// let valid: i64 = 0;
+/// let invalid: i64 = -1;
+///
+/// assert!(Id::try_from(valid).is_ok());
+/// assert!(Id::try_from(invalid).is_err());
+/// ```
 #[derive(Copy, Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Default)]
 pub struct Id(i64);
 
 impl Id {
+    /// Extracts the `i64` value from the `Id`.
     pub fn as_i64(&self) -> i64 {
         self.0
     }

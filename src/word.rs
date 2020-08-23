@@ -18,8 +18,14 @@ use std::fmt;
 pub struct Word(String);
 
 impl Word {
+    /// Extracts a string slice containing the contents of the `Word`.
     pub fn as_str(&self) -> &str {
         &self.0
+    }
+
+    /// Converts this `Word` into a `String`.
+    pub fn into_string(self) -> String {
+        self.0
     }
 }
 

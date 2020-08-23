@@ -18,8 +18,14 @@ use std::fmt;
 pub struct Line(String);
 
 impl Line {
+    /// Extracts a string slice containing the contents of the `Line`.
     pub fn as_str(&self) -> &str {
         &self.0
+    }
+
+    /// Converts this `Line` into a `String`.
+    pub fn into_string(self) -> String {
+        self.0
     }
 }
 
