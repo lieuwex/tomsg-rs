@@ -55,21 +55,16 @@ impl ConnectionInternal {
         let reply = parse(&message);
 
         match reply.1 {
-            InternalReplyCommand::HistoryInit(count) => {
+            InternalReply::HistoryInit(count) => {
                 if count == 0 {
                     if let Some(sender) = self.reply_map.remove(&reply.0) {
-                        sender
-                            .send(Ok(Reply {
-                                tag: reply.0,
-                                command: ReplyCommand::History(vec![]),
-                            }))
-                            .unwrap();
+                        sender.send(Ok(Reply::History(vec![]))).unwrap();
                     }
                 } else {
                     self.awaiting_history = Some((count, Vec::with_capacity(count as usize)));
                 }
             }
-            InternalReplyCommand::HistoryMessage(index, message) => {
+            InternalReply::HistoryMessage(index, message) => {
                 match &self.awaiting_history {
                     None => panic!("not waiting"),
                     Some((count, items)) => {
@@ -80,12 +75,7 @@ impl ConnectionInternal {
                             self.awaiting_history = None;
 
                             if let Some(sender) = self.reply_map.remove(&reply.0) {
-                                sender
-                                    .send(Ok(Reply {
-                                        tag: reply.0,
-                                        command: ReplyCommand::History(items),
-                                    }))
-                                    .unwrap();
+                                sender.send(Ok(Reply::History(items))).unwrap();
                             }
                         } else {
                             self.awaiting_history = Some((*count, items));
@@ -93,14 +83,9 @@ impl ConnectionInternal {
                     }
                 }
             }
-            InternalReplyCommand::Normal(n) => {
+            InternalReply::Normal(n) => {
                 if let Some(sender) = self.reply_map.remove(&reply.0) {
-                    sender
-                        .send(Ok(Reply {
-                            tag: reply.0,
-                            command: n,
-                        }))
-                        .unwrap();
+                    sender.send(Ok(n)).unwrap();
                 }
             }
         }

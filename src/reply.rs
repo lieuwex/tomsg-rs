@@ -5,15 +5,15 @@ use super::message::Message;
 use super::word::Word;
 use crate::util::{expect_word, parsei64};
 
-pub(super) enum InternalReplyCommand {
-    Normal(ReplyCommand),
+pub(super) enum InternalReply {
+    Normal(Reply),
     HistoryInit(i64),
     HistoryMessage(i64, Message), // index, message
 }
 
 /// A reply type and related information.
 #[derive(Debug, Clone)]
-pub enum ReplyCommand {
+pub enum Reply {
     /// Represents a succesful processing of a sent `Command`.
     Ok,
     /// A numeric value returned to a sent `Command`.
@@ -32,49 +32,38 @@ pub enum ReplyCommand {
     Message(Message),
 }
 
-/// A reply sent by the server on a `Command`.
-#[derive(Debug, Clone)]
-pub struct Reply {
-    /// The tag of the `Message` this `Reply` is related to.
-    pub tag: Word,
-    /// The command (with information) of this `Reply`.
-    pub command: ReplyCommand,
-}
-
-pub(super) fn parse(s: &str) -> (Word, InternalReplyCommand) {
+/// returns the tag and the InternalReply
+pub(super) fn parse(s: &str) -> (Word, InternalReply) {
     println!("the raw string we got was: '{}'", s);
     let words: Vec<_> = s.split(' ').collect();
 
-    let make = |command: InternalReplyCommand| -> (Word, InternalReplyCommand) {
+    let make = |command: InternalReply| -> (Word, InternalReply) {
         let tag = Word::try_from(words[0].to_string()).unwrap();
         (tag, command)
     };
-    let make_normal = |command: ReplyCommand| -> (Word, InternalReplyCommand) {
-        make(InternalReplyCommand::Normal(command))
-    };
+    let make_normal =
+        |command: Reply| -> (Word, InternalReply) { make(InternalReply::Normal(command)) };
 
     let expect_line = |s: String| Line::try_from(s).unwrap();
 
     match words[1] {
-        "ok" => make_normal(ReplyCommand::Ok),
-        "number" => make_normal(ReplyCommand::Number(parsei64(words[2]))),
-        "error" => make_normal(ReplyCommand::Error(expect_line(words[2..].join(" ")))),
-        "name" => make_normal(ReplyCommand::Name(expect_word(words[2]))),
-        "list" => make_normal(ReplyCommand::List(
-            words[3..].iter().map(expect_word).collect(),
-        )),
-        "pong" => make_normal(ReplyCommand::Pong),
+        "ok" => make_normal(Reply::Ok),
+        "number" => make_normal(Reply::Number(parsei64(words[2]))),
+        "error" => make_normal(Reply::Error(expect_line(words[2..].join(" ")))),
+        "name" => make_normal(Reply::Name(expect_word(words[2]))),
+        "list" => make_normal(Reply::List(words[3..].iter().map(expect_word).collect())),
+        "pong" => make_normal(Reply::Pong),
         "message" => {
             let message = Message::try_parse(&words[2..]).unwrap();
-            make_normal(ReplyCommand::Message(message))
+            make_normal(Reply::Message(message))
         }
 
         // still needs to be handled
-        "history" => make(InternalReplyCommand::HistoryInit(parsei64(words[2]))),
+        "history" => make(InternalReply::HistoryInit(parsei64(words[2]))),
         "history_message" => {
             let index = parsei64(words[2]);
             let message = Message::try_parse(&words[3..]).unwrap();
-            make(InternalReplyCommand::HistoryMessage(index, message))
+            make(InternalReply::HistoryMessage(index, message))
         }
 
         w => panic!(format!("unexpected response type: '{}'", w)),
