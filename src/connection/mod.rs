@@ -218,7 +218,7 @@ impl Connection {
             let mut internal = self.internal.lock().await;
 
             let tag = internal.tag_counter;
-            internal.tag_counter += 1;
+            internal.tag_counter = internal.tag_counter.overflowing_add(1).0;
             tag
         };
 
