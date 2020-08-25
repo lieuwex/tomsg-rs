@@ -7,12 +7,11 @@ pub use self::r#type::*;
 use std::collections::HashMap;
 use std::convert::TryFrom;
 use std::io;
-use std::net::SocketAddr;
 use std::sync::Arc;
 
 use tokio::io::BufReader;
 use tokio::net::tcp::OwnedWriteHalf;
-use tokio::net::TcpStream;
+use tokio::net::{lookup_host, TcpStream, ToSocketAddrs};
 use tokio::prelude::*;
 use tokio::sync::Mutex;
 use tokio::task;
@@ -121,8 +120,13 @@ impl Connection {
     /// sent to.
     pub async fn connect(
         _typ: Type,
-        address: SocketAddr,
+        address: impl ToSocketAddrs,
     ) -> std::io::Result<(Self, mpsc::Receiver<PushMessage>)> {
+        let address = lookup_host(address)
+            .await?
+            .next()
+            .ok_or_else(|| io::ErrorKind::AddrNotAvailable)?;
+
         let stream = TcpStream::connect(address).await?;
         let (reader, writer) = stream.into_split();
 
