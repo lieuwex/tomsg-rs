@@ -180,21 +180,23 @@ impl Connection {
         Ok((conn, push_receive))
     }
 
-    async fn send_command_with_tag(
+    /// Send the given `command` to this `Connection`.
+    pub async fn send_command(
         &self,
-        tag: Word,
         command: Command,
-    ) -> std::io::Result<Result<Reply, CloseReason>> {
-        let receiver = {
+    ) -> tokio::io::Result<Result<Reply, CloseReason>> {
+        let (tag, receiver) = {
             let mut internal = self.internal.lock().await;
 
-            if internal.reply_map.contains_key(&tag) {
-                panic!("key already exists");
-            }
+            let tag = internal.tag_counter;
+            let tag = Word::try_from(tag.to_string()).unwrap();
+            internal.tag_counter = internal.tag_counter.overflowing_add(1).0;
 
             let (sender, receiver) = oneshot::channel();
-            internal.reply_map.insert(tag.clone(), sender);
-            receiver
+            if internal.reply_map.insert(tag.clone(), sender).is_some() {
+                panic!("key already exists");
+            }
+            (tag, receiver)
         };
 
         {
@@ -207,23 +209,6 @@ impl Connection {
         }
 
         Ok(receiver.await.unwrap())
-    }
-
-    /// Send the given `command` to this `Connection`.
-    pub async fn send_command(
-        &self,
-        command: Command,
-    ) -> tokio::io::Result<Result<Reply, CloseReason>> {
-        let tag = {
-            let mut internal = self.internal.lock().await;
-
-            let tag = internal.tag_counter;
-            internal.tag_counter = internal.tag_counter.overflowing_add(1).0;
-            tag
-        };
-
-        self.send_command_with_tag(Word::try_from(tag.to_string()).unwrap(), command)
-            .await
     }
 
     /// Gets the reason this `Connection` is closed, or `None` if the `Connection` is still open.
