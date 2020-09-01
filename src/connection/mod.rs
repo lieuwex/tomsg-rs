@@ -194,6 +194,7 @@ impl Connection {
 
             let (sender, receiver) = oneshot::channel();
             if internal.reply_map.insert(tag.clone(), sender).is_some() {
+                // this shouldn't be possible.
                 panic!("key already exists");
             }
             (tag, receiver)

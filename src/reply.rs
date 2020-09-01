@@ -34,7 +34,6 @@ pub enum Reply {
 
 /// returns the tag and the InternalReply
 pub(super) fn parse(s: &str) -> (Word, InternalReply) {
-    println!("the raw string we got was: '{}'", s);
     let words: Vec<_> = s.split(' ').collect();
 
     let make = |command: InternalReply| -> (Word, InternalReply) {
