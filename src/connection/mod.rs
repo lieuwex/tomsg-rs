@@ -93,7 +93,7 @@ impl ConnectionInternal {
 }
 
 pub struct Connection {
-    stream: OwnedWriteHalf,
+    stream: Arc<Mutex<OwnedWriteHalf>>,
     internal: Arc<Mutex<ConnectionInternal>>,
 }
 
@@ -125,8 +125,8 @@ impl Connection {
             close_reason: None,
         }));
 
-        let mut conn = Self {
-            stream: writer,
+        let conn = Self {
+            stream: Arc::new(Mutex::new(writer)),
 
             internal: internal.clone(),
         };
@@ -181,7 +181,7 @@ impl Connection {
     }
 
     async fn send_command_with_tag(
-        &mut self,
+        &self,
         tag: Word,
         command: Command,
     ) -> std::io::Result<Result<Reply, CloseReason>> {
@@ -197,21 +197,21 @@ impl Connection {
             receiver
         };
 
-        let command = command.to_string();
-        println!("sending {} {}", tag, command);
-        self.stream
-            .write(format!("{} {}\n", tag, command).as_bytes())
-            .await?;
-        self.stream.flush().await?;
+        {
+            let mut stream = self.stream.lock().await;
+            let command = command.to_string();
+            stream
+                .write(format!("{} {}\n", tag, command).as_bytes())
+                .await?;
+            stream.flush().await?;
+        }
 
-        let value = receiver.await.unwrap();
-        println!("{:?}", value);
-        Ok(value)
+        Ok(receiver.await.unwrap())
     }
 
     /// Send the given `command` to this `Connection`.
     pub async fn send_command(
-        &mut self,
+        &self,
         command: Command,
     ) -> tokio::io::Result<Result<Reply, CloseReason>> {
         let tag = {
