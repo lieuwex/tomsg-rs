@@ -4,10 +4,10 @@ use crate::word::Word;
 
 #[derive(Debug)]
 pub enum PushMessage {
-    Online(i64, Word), // i64, word
+    Online(i64, Box<Word>), // i64, word
     Message(Message),
-    Invite(Word, Word), // word, word
-    Join(Word, Word),   // word, word
+    Invite(Box<Word>, Box<Word>), // word, word
+    Join(Box<Word>, Box<Word>),   // word, word
 }
 
 impl PushMessage {

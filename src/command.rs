@@ -3,28 +3,28 @@ use crate::line::Line;
 use crate::word::Word;
 
 /// A command that is sendable to a tomsg server, with related information.
-pub enum Command {
-    Version(Word),                // word
-    Register(Word, Line),         // word, string
-    Login(Word, Line),            // word, string
-    Logout,                       //
-    Listrooms,                    //
-    ListMembers(Word),            // word
-    CreateRoom,                   //
-    Invite(Word, Word),           // word, word
-    Send(Word, Option<Id>, Line), // word, i64, string
-    History(Word, i64),           // word, i64
-    HistoryBefore(Word, i64, Id), // word, i64, i64
-    GetMessage(i64),              // i64
-    Ping,                         //
-    IsOnline(Word),               // word
-    FirebaseToken(Word),          // word
-    DeleteFirebaseToken(Word),    // word
-    UserActive(i64),              // i64
+pub enum Command<'a> {
+    Version(&'a Word),                    // word
+    Register(&'a Word, &'a Line),         // word, string
+    Login(&'a Word, &'a Line),            // word, string
+    Logout,                               //
+    Listrooms,                            //
+    ListMembers(&'a Word),                // word
+    CreateRoom,                           //
+    Invite(&'a Word, &'a Word),           // word, word
+    Send(&'a Word, Option<Id>, &'a Line), // word, i64, string
+    History(&'a Word, i64),               // word, i64
+    HistoryBefore(&'a Word, i64, Id),     // word, i64, i64
+    GetMessage(i64),                      // i64
+    Ping,                                 //
+    IsOnline(&'a Word),                   // word
+    FirebaseToken(&'a Word),              // word
+    DeleteFirebaseToken(&'a Word),        // word
+    UserActive(i64),                      // i64
 }
 
-impl Command {
-    pub(super) fn to_string(&self) -> String {
+impl<'a> Command<'a> {
+    pub(super) fn to_string(&'a self) -> String {
         match self {
             Command::Version(v) => format!("version {}", v),
             Command::Register(username, password) => format!("register {} {}", username, password),

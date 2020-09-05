@@ -1,4 +1,4 @@
-use std::convert::TryFrom;
+use std::convert::TryInto;
 
 use super::line::Line;
 use super::message::Message;
@@ -19,11 +19,11 @@ pub enum Reply {
     /// A numeric value returned to a sent `Command`.
     Number(i64),
     /// An error value returned to a sent `Command`.
-    Error(Line),
+    Error(Box<Line>),
     /// A name value returned to a sent `Command`.
-    Name(Word),
+    Name(Box<Word>),
     /// A list of name values returned to a sent `Command`.
-    List(Vec<Word>),
+    List(Vec<Box<Word>>),
     /// Response to a sent 'Command::Ping`.
     Pong,
     /// Resonse of a list of historical `Message` instances.
@@ -33,17 +33,17 @@ pub enum Reply {
 }
 
 /// returns the tag and the InternalReply
-pub(super) fn parse(s: &str) -> (Word, InternalReply) {
+pub(super) fn parse(s: &str) -> (Box<Word>, InternalReply) {
     let words: Vec<_> = s.split(' ').collect();
 
-    let make = |command: InternalReply| -> (Word, InternalReply) {
-        let tag = Word::try_from(words[0].to_string()).unwrap();
+    let make = |command: InternalReply| -> (Box<Word>, InternalReply) {
+        let tag: Box<Word> = words[0].to_string().try_into().unwrap();
         (tag, command)
     };
     let make_normal =
-        |command: Reply| -> (Word, InternalReply) { make(InternalReply::Normal(command)) };
+        |command: Reply| -> (Box<Word>, InternalReply) { make(InternalReply::Normal(command)) };
 
-    let expect_line = |s: String| Line::try_from(s).unwrap();
+    let expect_line = |s: String| -> Box<Line> { s.try_into().unwrap() };
 
     match words[1] {
         "ok" => make_normal(Reply::Ok),
