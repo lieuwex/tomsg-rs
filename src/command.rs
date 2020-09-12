@@ -48,10 +48,9 @@ impl Command {
             Command::GetMessage(message_id) => format!("get_message {}", message_id),
             Command::Ping => String::from("ping"),
             Command::IsOnline(user) => format!("is_online {}", user),
+            Command::FirebaseToken(token) => format!("firebase_token {}", token),
+            Command::DeleteFirebaseToken(token) => format!("delete_firebase_token {}", token),
             Command::UserActive(active) => format!("user_active {}", active),
-
-            Command::FirebaseToken(_) => todo!(),
-            Command::DeleteFirebaseToken(_) => todo!(),
         }
     }
 }
