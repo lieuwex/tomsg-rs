@@ -12,6 +12,11 @@ pub(super) enum InternalReply {
 }
 
 /// A reply type and related information.
+///
+/// For every possible type there is a function defined which converts this `Reply` into an
+/// `Option`, if the `Reply` is that particular variant `Some(val)` is returned. Otherwise, `None`
+/// is returned.
+/// This is useful for quickly extracting the wanted response value.
 #[derive(Debug, Clone)]
 pub enum Reply {
     /// Represents a succesful processing of a sent `Command`.
@@ -30,6 +35,57 @@ pub enum Reply {
     History(Vec<Message>),
     /// A single `Message` instance.
     Message(Message),
+}
+
+impl Reply {
+    pub fn ok(self) -> Option<()> {
+        match self {
+            Reply::Ok => Some(()),
+            _ => None,
+        }
+    }
+    pub fn number(self) -> Option<i64> {
+        match self {
+            Reply::Number(n) => Some(n),
+            _ => None,
+        }
+    }
+    pub fn error(self) -> Option<Line> {
+        match self {
+            Reply::Error(e) => Some(e),
+            _ => None,
+        }
+    }
+    pub fn name(self) -> Option<Word> {
+        match self {
+            Reply::Name(n) => Some(n),
+            _ => None,
+        }
+    }
+    pub fn list(self) -> Option<Vec<Word>> {
+        match self {
+            Reply::List(l) => Some(l),
+            _ => None,
+        }
+    }
+    pub fn pong(self) -> Option<()> {
+        match self {
+            Reply::Pong => Some(()),
+            _ => None,
+        }
+    }
+    pub fn history(self) -> Option<Vec<Message>> {
+        match self {
+            Reply::History(h) => Some(h),
+            _ => None,
+        }
+    }
+    pub fn message(self) -> Option<Message> {
+        match self {
+            Reply::Message(m) => Some(m),
+            _ => None,
+        }
+    }
 }
 
 /// returns the tag and the InternalReply
