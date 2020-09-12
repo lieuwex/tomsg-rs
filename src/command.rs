@@ -8,7 +8,7 @@ pub enum Command {
     Register(Word, Line),         // word, string
     Login(Word, Line),            // word, string
     Logout,                       //
-    Listrooms,                    //
+    ListRooms,                    //
     ListMembers(Word),            // word
     CreateRoom,                   //
     Invite(Word, Word),           // word, word
@@ -30,7 +30,7 @@ impl Command {
             Command::Register(username, password) => format!("register {} {}", username, password),
             Command::Login(username, password) => format!("login {} {}", username, password),
             Command::Logout => String::from("logout"),
-            Command::Listrooms => String::from("list_rooms"),
+            Command::ListRooms => String::from("list_rooms"),
             Command::ListMembers(room) => format!("list_members {}", room),
             Command::CreateRoom => String::from("create_room"),
             Command::Invite(room, user) => format!("invite {} {}", room, user),
