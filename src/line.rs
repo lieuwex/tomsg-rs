@@ -18,6 +18,13 @@ use std::fmt;
 pub struct Line(String);
 
 impl Line {
+    /// Create an `Line` from the given `val`.
+    /// This function is `unsafe` because the `val` is not checked on conformity, only use this
+    /// function if you're sure that the given `val` does not contain newlines.
+    pub unsafe fn from_string_unchecked(val: String) -> Self {
+        Line(val)
+    }
+
     /// Extracts a string slice containing the contents of the `Line`.
     pub fn as_str(&self) -> &str {
         &self.0

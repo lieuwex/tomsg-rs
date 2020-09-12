@@ -18,6 +18,13 @@ use std::fmt;
 pub struct Word(String);
 
 impl Word {
+    /// Create an `Word` from the given `val`.
+    /// This function is `unsafe` because the `val` is not checked on conformity, only use this
+    /// function if you're sure that the given `val` does not contain spaces or newlines.
+    pub unsafe fn from_string_unchecked(val: String) -> Self {
+        Word(val)
+    }
+
     /// Extracts a string slice containing the contents of the `Word`.
     pub fn as_str(&self) -> &str {
         &self.0

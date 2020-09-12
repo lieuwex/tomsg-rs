@@ -17,6 +17,13 @@ use std::fmt;
 pub struct Id(i64);
 
 impl Id {
+    /// Create an `Id` from the given `val`.
+    /// This function is `unsafe` because the `val` is not checked on conformity, only use this
+    /// function if you're sure that the given `val` is non-negative.
+    pub unsafe fn from_i64_unchecked(val: i64) -> Self {
+        Id(val)
+    }
+
     /// Extracts the `i64` value from the `Id`.
     pub fn as_i64(&self) -> i64 {
         self.0
