@@ -15,7 +15,7 @@ pub enum Command {
     Send(Word, Option<Id>, Line), // word, i64, string
     History(Word, i64),           // word, i64
     HistoryBefore(Word, i64, Id), // word, i64, i64
-    GetMessage(i64),              // i64
+    GetMessage(Id),               // i64
     Ping,                         //
     IsOnline(Word),               // word
     FirebaseToken(Word),          // word
