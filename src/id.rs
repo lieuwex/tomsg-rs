@@ -18,6 +18,8 @@ pub struct Id(i64);
 
 impl Id {
     /// Create an `Id` from the given `val`.
+    ///
+    /// # Safety
     /// This function is `unsafe` because the `val` is not checked on conformity, only use this
     /// function if you're sure that the given `val` is non-negative.
     pub unsafe fn from_i64_unchecked(val: i64) -> Self {

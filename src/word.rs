@@ -19,6 +19,8 @@ pub struct Word(String);
 
 impl Word {
     /// Create an `Word` from the given `val`.
+    ///
+    /// # Safety
     /// This function is `unsafe` because the `val` is not checked on conformity, only use this
     /// function if you're sure that the given `val` does not contain spaces or newlines.
     pub unsafe fn from_string_unchecked(val: String) -> Self {
