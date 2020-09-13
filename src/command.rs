@@ -24,6 +24,7 @@ pub enum Command {
 }
 
 impl Command {
+    #[allow(clippy::inherent_to_string)]
     pub(super) fn to_string(&self) -> String {
         match self {
             Command::Version(v) => format!("version {}", v),
