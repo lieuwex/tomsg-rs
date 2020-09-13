@@ -3,6 +3,7 @@ use std::convert::TryFrom;
 use std::fmt;
 
 /// A `Word` is a `String` which does not contain spaces or newlines.
+///
 /// You can obtain a `Word` by calling `try_from` with a `String` argument:
 /// ```
 /// use tomsg_rs::word::Word;

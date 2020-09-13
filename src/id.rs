@@ -2,6 +2,7 @@ use std::convert::TryFrom;
 use std::fmt;
 
 /// An `Id` is a non-negative 64-bit integer.
+///
 /// You can obtain an `Id` by calling `try_from` with a `i64` argument:
 /// ```
 /// use tomsg_rs::id::Id;

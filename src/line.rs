@@ -3,6 +3,7 @@ use std::convert::TryFrom;
 use std::fmt;
 
 /// A `Line` is a `String` which does not contain newlines.
+///
 /// You can obtain a `Line` by calling `try_from` with a `String` argument:
 /// ```
 /// use tomsg_rs::line::Line;
