@@ -16,31 +16,31 @@ pub enum Command {
     Logout,
     ListRooms,
     ListMembers {
-        room_name: Word,
+        roomname: Word,
     },
     CreateRoom,
     Invite {
-        room_name: Word,
-        user: Word,
+        roomname: Word,
+        username: Word,
     },
     Send {
-        room_name: Word,
+        roomname: Word,
         reply_on: Option<Id>,
         message: Line,
     },
     History {
-        room_name: Word,
+        roomname: Word,
         count: i64,
     },
     HistoryBefore {
-        room_name: Word,
+        roomname: Word,
         count: i64,
         message_id: Id,
     },
     GetMessage(Id),
     Ping,
     IsOnline {
-        user: Word,
+        username: Word,
     },
     FirebaseToken(Word),
     DeleteFirebaseToken(Word),
@@ -58,11 +58,11 @@ impl Command {
             Command::Login { username, password } => format!("login {} {}", username, password),
             Command::Logout => String::from("logout"),
             Command::ListRooms => String::from("list_rooms"),
-            Command::ListMembers { room_name } => format!("list_members {}", room_name),
+            Command::ListMembers { roomname } => format!("list_members {}", roomname),
             Command::CreateRoom => String::from("create_room"),
-            Command::Invite { room_name, user } => format!("invite {} {}", room_name, user),
+            Command::Invite { roomname, username } => format!("invite {} {}", roomname, username),
             Command::Send {
-                room_name,
+                roomname,
                 reply_on,
                 message,
             } => {
@@ -70,17 +70,17 @@ impl Command {
                     None => -1,
                     Some(id) => id.into(),
                 };
-                format!("send {} {} {}", room_name, reply_on, message)
+                format!("send {} {} {}", roomname, reply_on, message)
             }
-            Command::History { room_name, count } => format!("history {} {}", room_name, count),
+            Command::History { roomname, count } => format!("history {} {}", roomname, count),
             Command::HistoryBefore {
-                room_name,
+                roomname,
                 count,
                 message_id,
-            } => format!("history_before {} {} {}", room_name, count, message_id),
+            } => format!("history_before {} {} {}", roomname, count, message_id),
             Command::GetMessage(message_id) => format!("get_message {}", message_id),
             Command::Ping => String::from("ping"),
-            Command::IsOnline { user } => format!("is_online {}", user),
+            Command::IsOnline { username } => format!("is_online {}", username),
             Command::FirebaseToken(token) => format!("firebase_token {}", token),
             Command::DeleteFirebaseToken(token) => format!("delete_firebase_token {}", token),
             Command::UserActive(active) => format!("user_active {}", active),
