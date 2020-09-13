@@ -7,7 +7,7 @@ use std::ops::Deref;
 ///
 /// You can obtain a `Word` by calling `try_from` with a `String` argument:
 /// ```
-/// use tomsg_rs::word::Word;
+/// use tomsg_rs::Word;
 /// use std::convert::TryFrom;
 ///
 /// let valid = "this_is_a_valid_word".to_string();

@@ -5,7 +5,7 @@ use std::fmt;
 ///
 /// You can obtain an `Id` by calling `try_from` with a `i64` argument:
 /// ```
-/// use tomsg_rs::id::Id;
+/// use tomsg_rs::Id;
 /// use std::convert::TryFrom;
 ///
 /// let valid: i64 = 0;

@@ -7,7 +7,7 @@ use std::ops::Deref;
 ///
 /// You can obtain a `Line` by calling `try_from` with a `String` argument:
 /// ```
-/// use tomsg_rs::line::Line;
+/// use tomsg_rs::Line;
 /// use std::convert::TryFrom;
 ///
 /// let valid = "this is a valid line".to_string();
