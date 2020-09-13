@@ -1,3 +1,5 @@
+//! Holds connection related data types.
+
 mod closereason;
 mod r#type;
 
@@ -92,6 +94,7 @@ impl ConnectionInternal {
     }
 }
 
+/// A connection with a tomsg server.
 pub struct Connection {
     stream: Arc<Mutex<OwnedWriteHalf>>,
     internal: Arc<Mutex<ConnectionInternal>>,
