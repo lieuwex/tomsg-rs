@@ -1,6 +1,7 @@
 use std::borrow::Borrow;
 use std::convert::TryFrom;
 use std::fmt;
+use std::ops::Deref;
 
 /// A `Word` is a `String` which does not contain spaces or newlines.
 ///
@@ -60,5 +61,13 @@ impl TryFrom<String> for Word {
 impl Borrow<str> for Word {
     fn borrow(&self) -> &str {
         self.as_str()
+    }
+}
+
+impl Deref for Word {
+    type Target = str;
+
+    fn deref(&self) -> &Self::Target {
+        &self.0
     }
 }

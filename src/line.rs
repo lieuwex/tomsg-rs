@@ -1,6 +1,7 @@
 use std::borrow::Borrow;
 use std::convert::TryFrom;
 use std::fmt;
+use std::ops::Deref;
 
 /// A `Line` is a `String` which does not contain newlines.
 ///
@@ -60,5 +61,13 @@ impl TryFrom<String> for Line {
 impl Borrow<str> for Line {
     fn borrow(&self) -> &str {
         self.as_str()
+    }
+}
+
+impl Deref for Line {
+    type Target = str;
+
+    fn deref(&self) -> &Self::Target {
+        &self.0
     }
 }
