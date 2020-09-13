@@ -1,15 +1,27 @@
-pub mod command;
 pub mod connection;
-pub mod id;
-pub mod line;
-pub mod message;
-pub mod pushmessage;
-pub mod reply;
-pub mod word;
 
+mod command;
+mod id;
+mod line;
+mod message;
+mod pushmessage;
+mod reply;
 mod util;
+mod word;
 
+// rexport
 pub use connection::Connection;
+
+// structs
+pub use id::Id;
+pub use line::Line;
+pub use message::Message;
+pub use word::Word;
+
+// enums
+pub use command::Command;
+pub use pushmessage::PushMessage;
+pub use reply::Reply;
 
 /*
 #[cfg(test)]
