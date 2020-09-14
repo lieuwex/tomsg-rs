@@ -13,6 +13,7 @@ pub enum Command {
         username: Word,
         password: Line,
     },
+    ChangePassword(Line),
     Logout,
     ListRooms,
     ListMembers {
@@ -56,6 +57,7 @@ impl Command {
                 format!("register {} {}", username, password)
             }
             Command::Login { username, password } => format!("login {} {}", username, password),
+            Command::ChangePassword(password) => format!("change_password {}", password),
             Command::Logout => String::from("logout"),
             Command::ListRooms => String::from("list_rooms"),
             Command::ListMembers { roomname } => format!("list_members {}", roomname),
