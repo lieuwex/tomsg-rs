@@ -3,7 +3,7 @@ use crate::util::{expect_word, parsei64};
 use crate::word::Word;
 
 /// An item pushed from the tomsg server to the client.
-#[derive(Debug)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub enum PushMessage {
     /// An update to the online state of a person that you participate with in a room.
     Online {

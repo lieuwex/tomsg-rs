@@ -3,6 +3,7 @@ use crate::line::Line;
 use crate::word::Word;
 
 /// A command that is sendable to a tomsg server, with related information.
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub enum Command {
     Version(Word),
     Register {

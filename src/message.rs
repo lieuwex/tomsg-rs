@@ -6,7 +6,7 @@ use crate::line::Line;
 use crate::word::Word;
 
 /// A tomsg message message in a room.
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct Message {
     /// The ID of the message.
     pub id: Id,
