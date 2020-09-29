@@ -21,6 +21,7 @@ pub enum Command {
         roomname: Word,
     },
     CreateRoom,
+    LeaveRoom(Word),
     Invite {
         roomname: Word,
         username: Word,
@@ -63,6 +64,7 @@ impl Command {
             Command::ListRooms => String::from("list_rooms"),
             Command::ListMembers { roomname } => format!("list_members {}", roomname),
             Command::CreateRoom => String::from("create_room"),
+            Command::LeaveRoom(roomname) => format!("leave_room {}", roomname),
             Command::Invite { roomname, username } => format!("invite {} {}", roomname, username),
             Command::Send {
                 roomname,

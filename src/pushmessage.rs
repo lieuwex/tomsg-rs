@@ -15,6 +15,9 @@ pub enum PushMessage {
     /// A new message is sent in a room that the client participates in.
     Message(Message),
     /// A person invited the current client to a room.
+    ///
+    /// If `inviter` is the username of the logged-in user on the current client, it means that
+    /// another session of the logged-in user joined the room with name `roomname`.
     Invite {
         /// The name of the room the client is invited in.
         roomname: Word,
@@ -26,6 +29,16 @@ pub enum PushMessage {
         /// The room in question.
         roomname: Word,
         /// The username of the user that joined the room.
+        username: Word,
+    },
+    /// A person has left a room you participate in.
+    ///
+    /// If `username` is the username of the logged-in user on the current client, it means that
+    /// another session of the logged-in user left the room with name `roomname`.
+    Leave {
+        /// The room in question.
+        roomname: Word,
+        /// The username of the user that left the room.
         username: Word,
     },
 }
@@ -48,6 +61,10 @@ impl PushMessage {
                 inviter: expect_word(words[3]),
             },
             "join" => PushMessage::Join {
+                roomname: expect_word(words[2]),
+                username: expect_word(words[3]),
+            },
+            "leave" => PushMessage::Leave {
                 roomname: expect_word(words[2]),
                 username: expect_word(words[3]),
             },
