@@ -1,3 +1,5 @@
+use std::time;
+
 use crate::id::Id;
 use crate::line::Line;
 use crate::word::Word;
@@ -29,6 +31,13 @@ pub enum Command {
     Send {
         roomname: Word,
         reply_on: Option<Id>,
+        message: Line,
+    },
+    SendAt {
+        apikey: Word,
+        roomname: Word,
+        reply_on: Option<Id>,
+        timestamp: time::SystemTime,
         message: Line,
     },
     History {
@@ -76,6 +85,29 @@ impl Command {
                     Some(id) => id.into(),
                 };
                 format!("send {} {} {}", roomname, reply_on, message)
+            }
+            Command::SendAt {
+                apikey,
+                roomname,
+                reply_on,
+                timestamp,
+                message,
+            } => {
+                let reply_on: i64 = match reply_on {
+                    None => -1,
+                    Some(id) => id.into(),
+                };
+                format!(
+                    "sendat {} {} {} {} {}",
+                    apikey,
+                    roomname,
+                    reply_on,
+                    timestamp
+                        .duration_since(time::UNIX_EPOCH)
+                        .unwrap()
+                        .as_micros(),
+                    message
+                )
             }
             Command::History { roomname, count } => format!("history {} {}", roomname, count),
             Command::HistoryBefore {
