@@ -121,6 +121,6 @@ pub(super) fn parse(s: &str) -> (Word, InternalReply) {
             make(InternalReply::HistoryMessage(index, message))
         }
 
-        w => panic!(format!("unexpected response type: '{}'", w)),
+        w => panic!("unexpected response type: '{}'", w),
     }
 }

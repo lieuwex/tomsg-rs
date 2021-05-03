@@ -11,12 +11,10 @@ use std::convert::TryFrom;
 use std::io;
 use std::sync::Arc;
 
-use tokio::io::BufReader;
+use tokio::io::{AsyncBufReadExt, AsyncWriteExt, BufReader};
 use tokio::net::tcp::OwnedWriteHalf;
 use tokio::net::{lookup_host, TcpStream, ToSocketAddrs};
-use tokio::prelude::*;
 use tokio::sync::Mutex;
-use tokio::task;
 
 use crate::command::Command;
 use crate::message::Message;
@@ -113,7 +111,7 @@ impl Connection {
         let address = lookup_host(address)
             .await?
             .next()
-            .ok_or_else(|| io::ErrorKind::AddrNotAvailable)?;
+            .ok_or(io::ErrorKind::AddrNotAvailable)?;
 
         let stream = TcpStream::connect(address).await?;
         let (reader, writer) = stream.into_split();
@@ -134,7 +132,7 @@ impl Connection {
             internal: internal.clone(),
         };
 
-        task::spawn(async move {
+        tokio::spawn(async move {
             let mut reader = BufReader::new(reader);
 
             let (mut internal, close_reason) = loop {

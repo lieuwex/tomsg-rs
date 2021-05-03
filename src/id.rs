@@ -45,14 +45,14 @@ impl TryFrom<i64> for Id {
     }
 }
 
-impl Into<i64> for Id {
-    fn into(self) -> i64 {
-        self.0
+impl From<Id> for i64 {
+    fn from(id: Id) -> i64 {
+        id.0
     }
 }
-impl Into<i64> for &Id {
-    fn into(self) -> i64 {
-        self.0
+impl From<&Id> for i64 {
+    fn from(id: &Id) -> i64 {
+        id.0
     }
 }
 
