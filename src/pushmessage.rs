@@ -48,23 +48,23 @@ impl PushMessage {
         let words: Vec<_> = s.split(' ').collect();
         assert!(words[0] == "_push");
         let item = match words[1] {
-            "online" => PushMessage::Online {
-                sessions: parsei64(&words[2]),
+            "online" => Self::Online {
+                sessions: parsei64(words[2]),
                 username: expect_word(words[3]),
             },
             "message" => {
                 let message = Message::try_parse(&words[2..]).unwrap();
-                PushMessage::Message(message)
+                Self::Message(message)
             }
-            "invite" => PushMessage::Invite {
+            "invite" => Self::Invite {
                 roomname: expect_word(words[2]),
                 inviter: expect_word(words[3]),
             },
-            "join" => PushMessage::Join {
+            "join" => Self::Join {
                 roomname: expect_word(words[2]),
                 username: expect_word(words[3]),
             },
-            "leave" => PushMessage::Leave {
+            "leave" => Self::Leave {
                 roomname: expect_word(words[2]),
                 username: expect_word(words[3]),
             },

@@ -23,13 +23,9 @@ impl Id {
     /// # Safety
     /// This function is `unsafe` because the `val` is not checked on conformity, only use this
     /// function if you're sure that the given `val` is non-negative.
-    pub unsafe fn from_i64_unchecked(val: i64) -> Self {
-        Id(val)
-    }
-
-    /// Extracts the `i64` value from the `Id`.
-    pub fn as_i64(&self) -> i64 {
-        self.0
+    #[must_use]
+    pub const unsafe fn from_i64_unchecked(val: i64) -> Self {
+        Self(val)
     }
 }
 
@@ -40,18 +36,18 @@ impl TryFrom<i64> for Id {
         if val < 0 {
             Err("value cannot be negative")
         } else {
-            Ok(Id(val))
+            Ok(Self(val))
         }
     }
 }
 
 impl From<Id> for i64 {
-    fn from(id: Id) -> i64 {
+    fn from(id: Id) -> Self {
         id.0
     }
 }
 impl From<&Id> for i64 {
-    fn from(id: &Id) -> i64 {
+    fn from(id: &Id) -> Self {
         id.0
     }
 }

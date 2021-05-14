@@ -38,48 +38,56 @@ pub enum Reply {
 }
 
 impl Reply {
+    #[must_use]
     pub fn ok(self) -> Option<()> {
         match self {
             Reply::Ok => Some(()),
             _ => None,
         }
     }
+    #[must_use]
     pub fn number(self) -> Option<i64> {
         match self {
             Reply::Number(n) => Some(n),
             _ => None,
         }
     }
+    #[must_use]
     pub fn error(self) -> Option<Line> {
         match self {
             Reply::Error(e) => Some(e),
             _ => None,
         }
     }
+    #[must_use]
     pub fn name(self) -> Option<Word> {
         match self {
             Reply::Name(n) => Some(n),
             _ => None,
         }
     }
+    #[must_use]
     pub fn list(self) -> Option<Vec<Word>> {
         match self {
             Reply::List(l) => Some(l),
             _ => None,
         }
     }
+    #[must_use]
     pub fn pong(self) -> Option<()> {
         match self {
             Reply::Pong => Some(()),
             _ => None,
         }
     }
+    #[must_use]
     pub fn history(self) -> Option<Vec<Message>> {
         match self {
             Reply::History(h) => Some(h),
             _ => None,
         }
     }
+    #[must_use]
     pub fn message(self) -> Option<Message> {
         match self {
             Reply::Message(m) => Some(m),

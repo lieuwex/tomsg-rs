@@ -25,16 +25,19 @@ impl Word {
     /// # Safety
     /// This function is `unsafe` because the `val` is not checked on conformity, only use this
     /// function if you're sure that the given `val` does not contain spaces or newlines.
-    pub unsafe fn from_string_unchecked(val: String) -> Self {
-        Word(val)
+    #[must_use]
+    pub const unsafe fn from_string_unchecked(val: String) -> Self {
+        Self(val)
     }
 
     /// Extracts a string slice containing the contents of the `Word`.
+    #[must_use]
     pub fn as_str(&self) -> &str {
         &self.0
     }
 
     /// Converts this `Word` into a `String`.
+    #[must_use]
     pub fn into_string(self) -> String {
         self.0
     }
@@ -53,7 +56,7 @@ impl TryFrom<String> for Word {
         if val.contains(|c| c == '\n' || c == ' ') {
             Err("string contains newlines or spaces")
         } else {
-            Ok(Word(val))
+            Ok(Self(val))
         }
     }
 }
