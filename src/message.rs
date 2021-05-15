@@ -1,4 +1,5 @@
 use std::convert::TryFrom;
+use std::convert::TryInto;
 use std::time;
 
 use crate::id::Id;
@@ -13,13 +14,13 @@ pub struct Message {
     /// The ID of the message this message replies on, if any.
     pub reply_on: Option<Id>,
     /// The name of the tomsg room this message is sent in.
-    pub roomname: Word,
+    pub roomname: Box<Word>,
     /// The username of the author of this message.
-    pub username: Word,
+    pub username: Box<Word>,
     /// The time this message was sent.
     pub timestamp: time::SystemTime,
     /// The contents of this message.
-    pub message: Line,
+    pub message: Box<Line>,
 }
 
 impl Message {
@@ -27,9 +28,7 @@ impl Message {
         macro_rules! parse_i64 {
             ($val:expr, $field:expr) => {
                 match $val.parse::<i64>() {
-                    Err(_) => {
-                        return Err(concat!("got invalid invalid value for message ", $field))
-                    }
+                    Err(_) => return Err(concat!("got invalid invalid value for message ", $field)),
                     Ok(i) => i,
                 }
             };
@@ -37,9 +36,7 @@ impl Message {
         macro_rules! parse_id {
             ($val:expr, $field:expr) => {
                 match Id::try_from($val) {
-                    Err(_) => {
-                        return Err(concat!("got invalid invalid value for message ", $field))
-                    }
+                    Err(_) => return Err(concat!("got invalid invalid value for message ", $field)),
                     Ok(i) => i,
                 }
             };
@@ -50,14 +47,14 @@ impl Message {
             -1 => None,
             id => Some(parse_id!(id, "reply_on")),
         };
-        let roomname = Word::try_from(words[0].to_string())?;
-        let username = Word::try_from(words[1].to_string())?;
+        let roomname = words[0].to_string().try_into()?;
+        let username = words[1].to_string().try_into()?;
 
         let timestamp = parse_i64!(words[2], "timestamp") as u64;
         let timestamp = time::UNIX_EPOCH + time::Duration::from_micros(timestamp);
 
         let message = words[5..].join(" ");
-        let message = Line::try_from(message)?;
+        let message = message.try_into()?;
 
         Ok(Self {
             id,

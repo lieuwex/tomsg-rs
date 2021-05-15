@@ -7,7 +7,7 @@ pub use self::closereason::*;
 pub use self::r#type::*;
 
 use std::collections::HashMap;
-use std::convert::TryFrom;
+use std::convert::TryInto;
 use std::io;
 use std::sync::Arc;
 
@@ -22,13 +22,13 @@ use crate::pushmessage::*;
 use crate::reply::*;
 use crate::word::Word;
 
-use futures::channel::mpsc;
 use futures::channel::oneshot;
+use futures::{channel::mpsc, Future};
 use futures_util::sink::SinkExt;
 
 struct ConnectionInternal {
     tag_counter: usize,
-    reply_map: HashMap<Word, oneshot::Sender<Result<Reply, CloseReason>>>,
+    reply_map: HashMap<Box<Word>, oneshot::Sender<Result<Reply, CloseReason>>>,
     awaiting_history: Option<(i64, Vec<Message>)>,
     push_channel: mpsc::Sender<PushMessage>,
     close_reason: Option<CloseReason>,
@@ -168,7 +168,7 @@ impl Connection {
             }
         });
 
-        conn.send_command(Command::Version(Word::try_from("4".to_string()).unwrap()))
+        conn.send_command(Command::Version("4".try_into().unwrap()))
             .await?
             .map_err(|e| {
                 let (kind, e) = match e {
@@ -182,35 +182,38 @@ impl Connection {
     }
 
     /// Send the given `command` to this `Connection`.
-    pub async fn send_command(
-        &self,
-        command: Command,
-    ) -> tokio::io::Result<Result<Reply, CloseReason>> {
-        let (tag, receiver) = {
-            let mut internal = self.internal.lock().await;
+    pub fn send_command<'a, 'b>(
+        &'a self,
+        command: Command<'b>,
+    ) -> impl Future<Output = tokio::io::Result<Result<Reply, CloseReason>>> + 'a {
+        let command = command.to_string();
 
-            let tag = internal.tag_counter;
-            let tag = Word::try_from(tag.to_string()).unwrap();
-            internal.tag_counter = internal.tag_counter.overflowing_add(1).0;
+        async move {
+            let (tag, receiver) = {
+                let mut internal = self.internal.lock().await;
 
-            let (sender, receiver) = oneshot::channel();
-            if internal.reply_map.insert(tag.clone(), sender).is_some() {
-                // this shouldn't be possible.
-                panic!("key already exists");
+                let tag = internal.tag_counter;
+                let tag: Box<Word> = tag.to_string().try_into().unwrap();
+                internal.tag_counter = internal.tag_counter.overflowing_add(1).0;
+
+                let (sender, receiver) = oneshot::channel();
+                if internal.reply_map.insert(tag.clone(), sender).is_some() {
+                    // this shouldn't be possible.
+                    panic!("key already exists");
+                }
+                (tag, receiver)
+            };
+
+            {
+                let mut stream = self.stream.lock().await;
+                stream
+                    .write(format!("{} {}\n", tag, command).as_bytes())
+                    .await?;
+                stream.flush().await?;
             }
-            (tag, receiver)
-        };
 
-        {
-            let mut stream = self.stream.lock().await;
-            let command = command.to_string();
-            stream
-                .write(format!("{} {}\n", tag, command).as_bytes())
-                .await?;
-            stream.flush().await?;
+            Ok(receiver.await.unwrap())
         }
-
-        Ok(receiver.await.unwrap())
     }
 
     /// Gets the reason this `Connection` is closed, or `None` if the `Connection` is still open.

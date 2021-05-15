@@ -6,60 +6,60 @@ use crate::word::Word;
 
 /// A command that is sendable to a tomsg server, with related information.
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
-pub enum Command {
-    Version(Word),
+pub enum Command<'a> {
+    Version(&'a Word),
     Register {
-        username: Word,
-        password: Line,
+        username: &'a Word,
+        password: &'a Line,
     },
     Login {
-        username: Word,
-        password: Line,
+        username: &'a Word,
+        password: &'a Line,
     },
-    ChangePassword(Line),
+    ChangePassword(&'a Line),
     Logout,
     ListRooms,
     ListMembers {
-        roomname: Word,
+        roomname: &'a Word,
     },
     CreateRoom,
-    LeaveRoom(Word),
+    LeaveRoom(&'a Word),
     Invite {
-        roomname: Word,
-        username: Word,
+        roomname: &'a Word,
+        username: &'a Word,
     },
     Send {
-        roomname: Word,
+        roomname: &'a Word,
         reply_on: Option<Id>,
-        message: Line,
+        message: &'a Line,
     },
     SendAt {
-        apikey: Word,
-        roomname: Word,
+        apikey: &'a Word,
+        roomname: &'a Word,
         reply_on: Option<Id>,
         timestamp: time::SystemTime,
-        message: Line,
+        message: &'a Line,
     },
     History {
-        roomname: Word,
+        roomname: &'a Word,
         count: i64,
     },
     HistoryBefore {
-        roomname: Word,
+        roomname: &'a Word,
         count: i64,
         message_id: Id,
     },
     GetMessage(Id),
     Ping,
     IsOnline {
-        username: Word,
+        username: &'a Word,
     },
-    FirebaseToken(Word),
-    DeleteFirebaseToken(Word),
+    FirebaseToken(&'a Word),
+    DeleteFirebaseToken(&'a Word),
     UserActive(i64),
 }
 
-impl Command {
+impl<'a> Command<'a> {
     #[allow(clippy::inherent_to_string)]
     pub(super) fn to_string(&self) -> String {
         match self {

@@ -10,7 +10,7 @@ pub enum PushMessage {
         /// The amount of sessions currently marked as online.
         sessions: i64,
         /// The username of the user.
-        username: Word,
+        username: Box<Word>,
     },
     /// A new message is sent in a room that the client participates in.
     Message(Message),
@@ -20,16 +20,16 @@ pub enum PushMessage {
     /// another session of the logged-in user joined the room with name `roomname`.
     Invite {
         /// The name of the room the client is invited in.
-        roomname: Word,
+        roomname: Box<Word>,
         /// The username of the user that invited the client.
-        inviter: Word,
+        inviter: Box<Word>,
     },
     /// A person has joined a room you participate in.
     Join {
         /// The room in question.
-        roomname: Word,
+        roomname: Box<Word>,
         /// The username of the user that joined the room.
-        username: Word,
+        username: Box<Word>,
     },
     /// A person has left a room you participate in.
     ///
@@ -37,9 +37,9 @@ pub enum PushMessage {
     /// another session of the logged-in user left the room with name `roomname`.
     Leave {
         /// The room in question.
-        roomname: Word,
+        roomname: Box<Word>,
         /// The username of the user that left the room.
-        username: Word,
+        username: Box<Word>,
     },
 }
 
