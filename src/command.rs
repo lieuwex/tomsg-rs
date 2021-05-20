@@ -1,3 +1,4 @@
+use std::borrow::Cow;
 use std::time;
 
 use crate::id::Id;
@@ -7,55 +8,55 @@ use crate::word::Word;
 /// A command that is sendable to a tomsg server, with related information.
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub enum Command<'a> {
-    Version(&'a Word),
+    Version(Cow<'a, Word>),
     Register {
-        username: &'a Word,
-        password: &'a Line,
+        username: Cow<'a, Word>,
+        password: Cow<'a, Line>,
     },
     Login {
-        username: &'a Word,
-        password: &'a Line,
+        username: Cow<'a, Word>,
+        password: Cow<'a, Line>,
     },
-    ChangePassword(&'a Line),
+    ChangePassword(Cow<'a, Line>),
     Logout,
     ListRooms,
     ListMembers {
-        roomname: &'a Word,
+        roomname: Cow<'a, Word>,
     },
     CreateRoom,
-    LeaveRoom(&'a Word),
+    LeaveRoom(Cow<'a, Word>),
     Invite {
-        roomname: &'a Word,
-        username: &'a Word,
+        roomname: Cow<'a, Word>,
+        username: Cow<'a, Word>,
     },
     Send {
-        roomname: &'a Word,
+        roomname: Cow<'a, Word>,
         reply_on: Option<Id>,
-        message: &'a Line,
+        message: Cow<'a, Line>,
     },
     SendAt {
-        apikey: &'a Word,
-        roomname: &'a Word,
+        apikey: Cow<'a, Word>,
+        roomname: Cow<'a, Word>,
         reply_on: Option<Id>,
         timestamp: time::SystemTime,
-        message: &'a Line,
+        message: Cow<'a, Line>,
     },
     History {
-        roomname: &'a Word,
+        roomname: Cow<'a, Word>,
         count: i64,
     },
     HistoryBefore {
-        roomname: &'a Word,
+        roomname: Cow<'a, Word>,
         count: i64,
         message_id: Id,
     },
     GetMessage(Id),
     Ping,
     IsOnline {
-        username: &'a Word,
+        username: Cow<'a, Word>,
     },
-    FirebaseToken(&'a Word),
-    DeleteFirebaseToken(&'a Word),
+    FirebaseToken(Cow<'a, Word>),
+    DeleteFirebaseToken(Cow<'a, Word>),
     UserActive(i64),
 }
 

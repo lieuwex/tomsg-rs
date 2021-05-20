@@ -1,4 +1,4 @@
-use std::borrow::Borrow;
+use std::borrow::{Borrow, Cow};
 use std::convert::TryFrom;
 use std::fmt;
 use std::mem;
@@ -60,6 +60,17 @@ impl Line {
 impl fmt::Display for Line {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "{}", &self.0)
+    }
+}
+
+impl From<Box<Line>> for Cow<'_, Line> {
+    fn from(line: Box<Line>) -> Self {
+        Self::Owned(line)
+    }
+}
+impl<'a> From<&'a Line> for Cow<'a, Line> {
+    fn from(line: &'a Line) -> Self {
+        Self::Borrowed(line)
     }
 }
 

@@ -1,4 +1,4 @@
-use std::borrow::Borrow;
+use std::borrow::{Borrow, Cow};
 use std::convert::TryFrom;
 use std::fmt;
 use std::mem;
@@ -60,6 +60,17 @@ impl Word {
 impl fmt::Display for Word {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "{}", &self.0)
+    }
+}
+
+impl From<Box<Word>> for Cow<'_, Word> {
+    fn from(word: Box<Word>) -> Self {
+        Self::Owned(word)
+    }
+}
+impl<'a> From<&'a Word> for Cow<'a, Word> {
+    fn from(word: &'a Word) -> Self {
+        Self::Borrowed(word)
     }
 }
 

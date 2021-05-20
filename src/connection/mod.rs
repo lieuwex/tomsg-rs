@@ -168,7 +168,8 @@ impl Connection {
             }
         });
 
-        conn.send_command(Command::Version("4".try_into().unwrap()))
+        let version: &Word = "4".try_into().unwrap();
+        conn.send_command(Command::Version(version.into()))
             .await?
             .map_err(|e| {
                 let (kind, e) = match e {
