@@ -8,13 +8,14 @@ pub use self::r#type::*;
 
 use std::collections::HashMap;
 use std::convert::TryInto;
+use std::future::Future;
 use std::io;
 use std::sync::Arc;
 
 use tokio::io::{AsyncBufReadExt, AsyncWriteExt, BufReader};
 use tokio::net::tcp::OwnedWriteHalf;
 use tokio::net::{lookup_host, TcpStream, ToSocketAddrs};
-use tokio::sync::Mutex;
+use tokio::sync::{mpsc, oneshot, Mutex};
 
 use crate::command::Command;
 use crate::message::Message;
@@ -22,15 +23,11 @@ use crate::pushmessage::*;
 use crate::reply::*;
 use crate::word::Word;
 
-use futures::channel::oneshot;
-use futures::{channel::mpsc, Future};
-use futures_util::sink::SinkExt;
-
 struct ConnectionInternal {
     tag_counter: usize,
     reply_map: HashMap<Box<Word>, oneshot::Sender<Result<Reply, CloseReason>>>,
     awaiting_history: Option<(i64, Vec<Message>)>,
-    push_channel: mpsc::Sender<PushMessage>,
+    push_channel: Option<mpsc::Sender<PushMessage>>,
     close_reason: Option<CloseReason>,
 }
 
@@ -48,7 +45,12 @@ impl ConnectionInternal {
             Some(p) => p,
             None => return, // we can ignore this push
         };
-        self.push_channel.send(push).await.unwrap();
+        self.push_channel
+            .as_mut()
+            .unwrap()
+            .send(push)
+            .await
+            .unwrap();
     }
 
     async fn handle_reply(&mut self, message: String) {
@@ -122,7 +124,7 @@ impl Connection {
             tag_counter: 0,
             reply_map: HashMap::new(),
             awaiting_history: None,
-            push_channel: push_send,
+            push_channel: Some(push_send),
             close_reason: None,
         }));
 
@@ -142,7 +144,7 @@ impl Connection {
                 let mut internal = internal.lock().await;
                 match res {
                     Err(e) => {
-                        internal.push_channel.close_channel();
+                        internal.push_channel.take();
 
                         let close_reason = CloseReason::Err(e.to_string());
                         internal.close_reason = Some(close_reason.clone());
@@ -150,7 +152,7 @@ impl Connection {
                     }
                     Ok(0) => {
                         // EOF
-                        internal.push_channel.close_channel();
+                        internal.push_channel.take();
 
                         let close_reason = CloseReason::EOF;
                         internal.close_reason = Some(close_reason.clone());
