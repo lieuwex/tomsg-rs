@@ -27,8 +27,7 @@ struct ConnectionInternal {
     tag_counter: usize,
     reply_map: HashMap<Box<Word>, oneshot::Sender<Result<Reply, CloseReason>>>,
     awaiting_history: Option<(i64, Vec<Message>)>,
-    push_channel: Option<mpsc::Sender<PushMessage>>,
-    close_reason: Option<CloseReason>,
+    push_channel: Result<mpsc::Sender<PushMessage>, CloseReason>,
 }
 
 impl ConnectionInternal {
@@ -124,8 +123,7 @@ impl Connection {
             tag_counter: 0,
             reply_map: HashMap::new(),
             awaiting_history: None,
-            push_channel: Some(push_send),
-            close_reason: None,
+            push_channel: Ok(push_send),
         }));
 
         let conn = Self {
@@ -144,18 +142,14 @@ impl Connection {
                 let mut internal = internal.lock().await;
                 match res {
                     Err(e) => {
-                        internal.push_channel.take();
-
                         let close_reason = CloseReason::Err(e.to_string());
-                        internal.close_reason = Some(close_reason.clone());
+                        internal.push_channel = Err(close_reason.clone());
                         break (internal, close_reason);
                     }
                     Ok(0) => {
                         // EOF
-                        internal.push_channel.take();
-
                         let close_reason = CloseReason::EOF;
-                        internal.close_reason = Some(close_reason.clone());
+                        internal.push_channel = Err(close_reason.clone());
                         break (internal, close_reason);
                     }
                     Ok(_) => {
@@ -221,10 +215,14 @@ impl Connection {
 
     /// Gets the reason this `Connection` is closed, or `None` if the `Connection` is still open.
     pub async fn close_reason(&self) -> Option<CloseReason> {
-        self.internal.lock().await.close_reason.clone()
+        let internal = self.internal.lock().await;
+        match &internal.push_channel {
+            Ok(_) => None,
+            Err(e) => Some(e.clone()),
+        }
     }
     /// Returns whether or not this `Connection` is closed.
     pub async fn is_closed(&self) -> bool {
-        self.internal.lock().await.close_reason.is_some()
+        self.internal.lock().await.push_channel.is_err()
     }
 }
