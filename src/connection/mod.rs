@@ -171,7 +171,7 @@ impl Connection {
         });
 
         let version: &Word = "4".try_into().unwrap();
-        conn.send_command(Command::Version(version.into()))
+        conn.send(Command::Version(version.into()))
             .await?
             .map_err(|e| {
                 let (kind, e) = match e {
@@ -185,7 +185,7 @@ impl Connection {
     }
 
     /// Send the given `command` to this `Connection`.
-    pub fn send_command<'a, 'b>(
+    pub fn send<'a, 'b>(
         &'a self,
         command: Command<'b>,
     ) -> impl Future<Output = tokio::io::Result<Result<Reply, CloseReason>>> + 'a {
