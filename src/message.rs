@@ -24,33 +24,27 @@ pub struct Message {
 }
 
 impl Message {
-    pub(super) fn try_parse(words: &[&str]) -> Result<Self, &'static str> {
-        macro_rules! parse_i64 {
-            ($val:expr, $field:expr) => {
-                match $val.parse::<i64>() {
-                    Err(_) => return Err(concat!("got invalid invalid value for message ", $field)),
-                    Ok(i) => i,
-                }
-            };
-        }
-        macro_rules! parse_id {
-            ($val:expr, $field:expr) => {
-                match Id::try_from($val) {
-                    Err(_) => return Err(concat!("got invalid invalid value for message ", $field)),
-                    Ok(i) => i,
-                }
-            };
-        }
+    pub(super) fn try_parse(words: &[&str]) -> Result<Self, String> {
+        let err = |field| format!("got invalid value for message field: {}", field);
 
-        let id = parse_id!(parse_i64!(words[3], "id"), "id");
-        let reply_on = match parse_i64!(words[4], "reply_on") {
+        macro_rules! parse {
+            ($val:expr, $type:ty, $field:expr) => {
+                $val.parse::<$type>().map_err(|_| err($field))?
+            };
+        }
+        let parse_id = |val, field| Id::try_from(val).map_err(|_| err(field));
+
+        let id = parse!(words[3], i64, "id");
+        let id = parse_id(id, "id")?;
+
+        let reply_on = match parse!(words[4], i64, "reply_on") {
             -1 => None,
-            id => Some(parse_id!(id, "reply_on")),
+            id => Some(parse_id(id, "reply_on")?),
         };
         let roomname = words[0].to_string().try_into()?;
         let username = words[1].to_string().try_into()?;
 
-        let timestamp = parse_i64!(words[2], "timestamp") as u64;
+        let timestamp = parse!(words[2], u64, "timestamp");
         let timestamp = time::UNIX_EPOCH + time::Duration::from_micros(timestamp);
 
         let message = words[5..].join(" ");
